@@ -1,16 +1,31 @@
+import { useState } from 'react'
 import { SearchBar } from '../components/SearchBar'
 import { WeatherCard } from '../components/WeatherCard'
-import { useWeather } from '../hooks/useWeather'
 import { useGeolocation } from '../hooks/useGeolocation'
+import { useFetch } from '../hooks/useFetch'
+
+const BASE = 'https://api.openweathermap.org/data/2.5/weather'
+const KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
+
+function buildUrl(query) {
+  return `${BASE}?${query}&appid=${KEY}&units=metric&lang=kr`
+}
 
 export default function Home() {
-  const { weather, loading, error, fetchWeather, fetchWeatherByCoords } = useWeather()
+  // useFetch는 url이 바뀔 때마다 자동으로 재요청
+  const [url, setUrl] = useState(null)
+  const { data: weather, loading, error } = useFetch(url)
+
   const { locating, geoError, getLocation } = useGeolocation()
+
+  function handleSearch(city) {
+    setUrl(buildUrl(`q=${encodeURIComponent(city)}`))
+  }
 
   async function handleGPS() {
     try {
-      const coords = await getLocation()
-      fetchWeatherByCoords(coords)
+      const { lat, lon } = await getLocation()
+      setUrl(buildUrl(`lat=${lat}&lon=${lon}`))
     } catch {
       // geoError 상태로 표시됨
     }
@@ -21,7 +36,7 @@ export default function Home() {
 
   return (
     <div className="page">
-      <SearchBar onSearch={fetchWeather} loading={isLoading} />
+      <SearchBar onSearch={handleSearch} loading={isLoading} />
 
       <button className="gps-btn" onClick={handleGPS} disabled={isLoading}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +63,7 @@ export default function Home() {
 
       {!weather && !isLoading && !displayError && (
         <div className="status-box hint-box">
-          <p>도시명을 검색하거나 현재 위치를 사용하세요.</p>
+          <p>🌍 도시명을 검색하거나 현재 위치를 사용하세요.</p>
         </div>
       )}
     </div>
