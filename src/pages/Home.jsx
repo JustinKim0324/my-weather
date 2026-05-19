@@ -1,31 +1,21 @@
-import { useState } from 'react'
 import { SearchBar } from '../components/SearchBar'
 import { WeatherCard } from '../components/WeatherCard'
 import { useGeolocation } from '../hooks/useGeolocation'
-import { useFetch } from '../hooks/useFetch'
-
-const BASE = 'https://api.openweathermap.org/data/2.5/weather'
-const KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
-
-function buildUrl(query) {
-  return `${BASE}?${query}&appid=${KEY}&units=metric&lang=kr`
-}
+import { useWeather } from '../hooks/useWeather'
 
 export default function Home() {
-  // useFetch는 url이 바뀔 때마다 자동으로 재요청
-  const [url, setUrl] = useState(null)
-  const { data: weather, loading, error } = useFetch(url)
+  const { weather, loading, error, fetchWeather, fetchWeatherByCoords } = useWeather()
 
   const { locating, geoError, getLocation } = useGeolocation()
 
   function handleSearch(city) {
-    setUrl(buildUrl(`q=${encodeURIComponent(city)}`))
+    fetchWeather(city)
   }
 
   async function handleGPS() {
     try {
       const { lat, lon } = await getLocation()
-      setUrl(buildUrl(`lat=${lat}&lon=${lon}`))
+      fetchWeatherByCoords({ lat, lon })
     } catch {
       // geoError 상태로 표시됨
     }
