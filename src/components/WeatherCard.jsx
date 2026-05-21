@@ -1,4 +1,6 @@
-export function WeatherCard({ weather }) {
+import { memo } from 'react'
+
+export const WeatherCard = memo(function WeatherCard({ weather }) {
   const { name, sys, main, weather: conditions, wind } = weather
   const condition = conditions[0]
   const iconUrl = `https://openweathermap.org/img/wn/${condition.icon}@2x.png`
@@ -41,4 +43,4 @@ export function WeatherCard({ weather }) {
       </div>
     </div>
   )
-}
+})
